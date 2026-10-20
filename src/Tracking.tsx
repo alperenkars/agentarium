@@ -256,9 +256,17 @@ export function Tracking({
                 <code>{value.folder}/</code>
               </dd>
               <dt>Branches</dt>
-              <dd>All known ({value.branchCount})</dd>
+              <dd>
+                {value.lastSyncedAt
+                  ? `All known (${value.branchCount})`
+                  : "Not scanned"}
+              </dd>
               <dt>{value.restored ? "Backup scan" : "Scanned"}</dt>
-              <dd>{new Date(value.lastSyncedAt).toLocaleString()}</dd>
+              <dd>
+                {value.lastSyncedAt
+                  ? new Date(value.lastSyncedAt).toLocaleString()
+                  : "Not scanned"}
+              </dd>
             </dl>
             {value.shallow && (
               <p className="tracking-note">

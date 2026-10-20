@@ -10,6 +10,8 @@ export type Milestone = {
   evidence?: string;
 };
 export type Agent = {
+  demo?: boolean;
+  localSource?: boolean;
   id: string;
   name: string;
   role: string;

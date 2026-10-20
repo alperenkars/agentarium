@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "agents": [
+    {
+      "repositoryId": "my-backend",
+      "folder": "src/agents/example",
+      "agentKey": "example",
+      "capabilities": [
+        {
+          "id": "order-lookup",
+          "title": "Look up orders",
+          "tool": "order_lookup",
+          "provider": null,
+          "channels": [],
+          "evidence": [
+            {
+              "sha": "0000000000000000000000000000000000000000",
+              "file": "src/agents/example/tools.js",
+              "line": 1,
+              "match": "order_lookup",
+              "supports": ["capability", "tool"]
+            }
+          ]
+        }
+      ],
+      "jira": {
+        "site": "https://example.atlassian.net",
+        "issueKeys": ["VAG-1"]
+      },
+      "github": { "repository": "example/backend", "pullNumbers": [1] }
+    }
+  ]
+}

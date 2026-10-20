@@ -45,3 +45,16 @@ We will stay away from the zeitgeist where we can and return to the clarity of o
 Agents have simple, recognizable shapes. Names accompany every avatar, and shape distinguishes agents alongside color. Expressions stay quiet and friendly. Appearance conveys identity; health and capability claims require their own evidence.
 
 The home page is a colorful pixel-art world that fills the window, like entering a familiar game town. Each character type has its own silhouette, outfit, and accessories. Gentle movement gives the place life. Controls sit over the world; the agent map stays available as a practical browsing view. Playfulness belongs in the scene; navigation and writing stay simple. Bombom is a reference for this sense of place and character, with original artwork for Agentarium.
+
+## Explicit source views and agent work summary
+
+User-requested capability cards, source-backed provider/channel filters and local
+source roster controls may appear in profiles and navigation. Source, test and
+live evidence remain distinct. Existing user profiles and history are preserved.
+
+The Özet navigation and profile shortcut open an agent selector with mapped Jira /
+PR work, review requests, current-head CI problems, source read dates and a
+suggested next step. Approved milestones remain separate from work status. Counts
+describe exact mapped records, never a complete backlog. Saved reads, missing
+connections and unknown checks stay visible. This read-only screen does not post
+to Slack or change Jira / GitHub.

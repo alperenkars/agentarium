@@ -17,8 +17,11 @@ export function Yard({
   onSelect,
   onMap,
   onActivity,
+  onWork,
   onAdd,
   onExport,
+  onExamples,
+  showExamples,
   query,
   onQuery,
 }: {
@@ -26,8 +29,11 @@ export function Yard({
   onSelect: (id: string) => void;
   onMap: () => void;
   onActivity: () => void;
+  onWork: () => void;
   onAdd: () => void;
   onExport: () => void;
+  onExamples?: () => void;
+  showExamples?: boolean;
   query: string;
   onQuery: (s: string) => void;
 }) {
@@ -165,7 +171,11 @@ export function Yard({
           >
             {paused || reduced ? "▶" : "Ⅱ"}
           </button>
-          <GameMenu onExport={onExport} />
+          <GameMenu
+            onExport={onExport}
+            onExamples={onExamples}
+            showExamples={showExamples}
+          />
         </div>
       </header>
       {filters && (
@@ -220,6 +230,9 @@ export function Yard({
           </button>
           <button onClick={onActivity} aria-label="Recent evolution">
             <span aria-hidden="true">◷</span>Journal
+          </button>
+          <button onClick={onWork} aria-label="Agent iş özeti">
+            <span aria-hidden="true">≡</span>Özet
           </button>
           <i />
           <button onClick={onAdd} aria-label="Add an agent">

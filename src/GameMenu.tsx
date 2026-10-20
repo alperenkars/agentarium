@@ -1,4 +1,12 @@
-export function GameMenu({ onExport }: { onExport: () => void }) {
+export function GameMenu({
+  onExport,
+  onExamples,
+  showExamples,
+}: {
+  onExport: () => void;
+  onExamples?: () => void;
+  showExamples?: boolean;
+}) {
   return (
     <details className="game-menu">
       <summary aria-label="Menu" title="Menu">
@@ -8,6 +16,11 @@ export function GameMenu({ onExport }: { onExport: () => void }) {
         <button onClick={onExport} aria-label="Export workspace">
           Export
         </button>
+        {onExamples && (
+          <button onClick={onExamples}>
+            {showExamples ? "Hide examples" : "Show examples"}
+          </button>
+        )}
         <details>
           <summary>Credits</summary>
           <a

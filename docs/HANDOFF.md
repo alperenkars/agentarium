@@ -115,3 +115,34 @@ Build/test success is local validation, not a CI run or deployment. This checkpo
 7. Resolve the software license and remaining artwork rights before a public release/build.
 
 These are proposed next steps, not background jobs or already implemented features.
+
+## Agent work summary
+
+The Özet screen selects agents by the exact configured repository ID and folder.
+Its open/review/CI/all filters, search, linked recent work and next-step suggestions
+are separate from approved milestones. It depends on the existing, previously
+uncommitted local-source roster and capability connector, included here so the
+remote branch is runnable without unpublished code.
+
+GET `/api/agents` discovers only the local repository allowlist. Capability views
+use the ignored `.agentarium/capabilities.json` mapping and pinned source evidence.
+GET `/api/work-summary` reuses that exact mapping and the same loopback/same-origin
+boundary. The synthetic manifest example contains no real customer records.
+
+The connector reads at most ten mapped Jira keys and ten PR numbers. It uses only
+existing `AGENTARIUM_JIRA_AUTH` / `AGENTARIUM_GITHUB_TOKEN` process variables, with
+GET-only, bounded, no-redirect reads. No credentials or grants are created. Without
+credentials, dated saved reads remain explicitly distinct from live access.
+Current-head review/check/status metadata stays unknown on denied or partial
+reads; a successful CI result is not deployment evidence. Failed refresh retains
+the same agent's last successful read; changing agent immediately clears scope.
+
+Private `.agentarium/`, `.agentarium.local.json`, source snapshots, databases,
+credential files and restricted artwork are excluded from Git. Recreate private
+local configuration on another machine using the committed synthetic examples
+and existing authorized access. No background Slack digest or Slack connector is
+part of this screen.
+
+Validation: `npm test`, `npm run build`, `npm run test:e2e -- --workers=1`. These
+cover source mapping, agent scope, saved/unknown states, current-head CI, filters,
+refresh failures, links, preserved browser data and mobile layout.

@@ -170,3 +170,51 @@ The village uses a canvas background. Characters use Huberthart's original sprit
 Early development. An open-source license still needs to be selected by the project owner.
 
 See [the development handoff](docs/HANDOFF.md) for completed work, validation, limitations and the next-session plan.
+
+## Capabilities and related work
+
+An agent profile now includes **Capabilities** after connecting its exact folder.
+The source mapping is curated in ignored `.agentarium/capabilities.json`; see
+[the synthetic format example](docs/CAPABILITY_MAPPING.example.json) and
+[connector details](docs/HANDOFF.md#agent-work-summary). The example's zero
+SHA must be replaced with real scoped evidence; it is never seeded into the UI.
+
+Cards show tool → provider and channels, with collapsed pinned source references.
+Provider/channel unknown stays unknown. Source only, Historical source and
+Unverified source are distinct; last live verification remains unknown. Source
+checks and Jira/GitHub reads never prove deployment or successful customer use.
+
+**Related work** provides short exact Jira/GitHub links. Server-side GET adapters
+use only already authorized process credentials; no new credentials or grants are
+created. Dated reads from authorized connectors can also be displayed as Saved
+read (Stale after seven days). Missing live credentials remain explicitly Missing
+config. No browser token, automatic polling, Jira ticket creation or remote writes.
+
+### Real local agents in the town
+
+Opening the local app now discovers the exact agent folders from the configured
+repository allowlist and adds matching profiles automatically. Explicitly mapped profiles
+appear first; other folders use their exact agent keys. Existing profiles matched
+by repository ID and folder keep their names, avatars, notes and history. No folder
+scan or milestone is fabricated: **Technical details** says **Not scanned** until
+an actual scan or saved archive is loaded. Tool/provider/channel mappings remain
+explicit; folders without one show **No capability mapping for this folder**.
+
+Unchanged fictional starting profiles remain in storage and exports, but are hidden
+when local agents exist. **Menu → Show examples** displays them again. Edited user
+profiles are preserved and are not automatically treated as examples. Discovery
+reads local repository folder names only; it does not establish Jira/GitHub live
+credentials or production readiness.
+
+## Agent work summary
+
+Open **Özet** from the yard navigation or an agent profile. Select an agent to see
+its explicitly mapped Jira issues and pull requests, open work, review requests,
+current-head CI problems, source read dates and a suggested next step. Each row
+links to its source. This is an exact-record view, not a complete backlog.
+
+The screen reuses the private capability mapping and existing process credentials.
+Saved reads remain visibly dated; unavailable access stays unknown. Refresh is
+explicit and retains the last successful read for the same agent on failure.
+There is no Slack transcript ingestion, automatic posting or scheduled summary.
+Private mappings, source snapshots, local paths and credentials remain ignored.

@@ -2,12 +2,15 @@ import React, { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Avatar } from "./Avatar";
 import { AvatarPicker } from "./AvatarPicker";
+import { Capabilities } from "./Capabilities";
+import { WorkSummary } from "./WorkSummary";
 import { Tracking } from "./Tracking";
 import { Evolution, ChangeEvidenceView } from "./Evolution";
 import { GameMenu } from "./GameMenu";
 import { assignMissingAvatars, randomAvatar } from "./avatars.mjs";
 import { Yard } from "./World";
 import { seed } from "./data";
+import { markExamples, mergeSourceAgents } from "./source-agents.mjs";
 import { kinds, type Agent, type Kind } from "./model";
 import {
   chronological,
@@ -44,9 +47,9 @@ function load(): Agent[] {
           ),
       )
     )
-      return assignMissingAvatars(value);
+      return assignMissingAvatars(markExamples(value, seed));
   } catch {}
-  return assignMissingAvatars(seed);
+  return assignMissingAvatars(seed.map((a) => ({ ...a, demo: true })));
 }
 const dateLabel = (date: string) =>
   new Intl.DateTimeFormat("en", {
@@ -55,19 +58,111 @@ const dateLabel = (date: string) =>
     year: "numeric",
     timeZone: "UTC",
   }).format(new Date(date + "T12:00:00Z"));
+function SourceUpdates({
+  collapsed,
+  children,
+}: {
+  collapsed: boolean;
+  children: React.ReactNode;
+}) {
+  return collapsed ? (
+    <details className="source-updates-fold">
+      <summary>Gelişim taslakları</summary>
+      {children}
+    </details>
+  ) : (
+    <>{children}</>
+  );
+}
 function App() {
   const [agents, setAgents] = useState<Agent[]>(load);
+  const [showExamples, setShowExamples] = useState(false);
+  const [sourceReady, setSourceReady] = useState(false);
+  const [sourceCatalog, setSourceCatalog] = useState<
+    {
+      repositoryId: string;
+      folder: string;
+      capabilityCount?: number;
+      providers?: string[];
+      channels?: string[];
+      capabilityTerms?: string[];
+    }[]
+  >([]);
+  const [exploreProvider, setExploreProvider] = useState("");
+  const [exploreChannel, setExploreChannel] = useState("");
+  const catalogFor = (agent: Agent) =>
+    sourceCatalog.find(
+      (source) =>
+        source.repositoryId === agent.tracking?.repositoryId &&
+        source.folder === agent.tracking?.folder,
+    );
+  const searchText = (value: string) =>
+    value
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/ı/g, "i")
+      .toLowerCase();
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
-  const [view, setView] = useState<"yard" | "map" | "activity">("yard");
+  const [view, setView] = useState<"yard" | "map" | "activity" | "work">(
+    "yard",
+  );
+  const [workAgentId, setWorkAgentId] = useState("");
   const [modal, setModal] = useState<"agent" | "event" | "avatar" | null>(null);
   const [avatarId, setAvatarId] = useState(randomAvatar);
   const [notice, setNotice] = useState("");
   const dialog = useRef<HTMLDialogElement>(null);
   const active = agents.find((a) => a.id === selected);
-  const visible = agents.filter((agent) =>
-    agent.name.toLowerCase().includes(query.trim().toLowerCase()),
+  const hasLocalAgents = agents.some((a) => !!a.tracking);
+  const examplesMode = showExamples || (sourceReady && !hasLocalAgents);
+  const visible = agents.filter(
+    (a) =>
+      (!a.demo || examplesMode) &&
+      searchText(
+        [
+          a.name,
+          a.tracking?.folder || "",
+          ...(catalogFor(a)?.capabilityTerms || []),
+          ...(catalogFor(a)?.providers || []),
+        ].join(" "),
+      ).includes(searchText(query.trim())) &&
+      (view !== "map" ||
+        ((!exploreProvider ||
+          catalogFor(a)?.providers?.includes(exploreProvider)) &&
+          (!exploreChannel ||
+            catalogFor(a)?.channels?.includes(exploreChannel)))),
   );
+  const toggleExamples = hasLocalAgents
+    ? () => {
+        setShowExamples((v) => !v);
+        setSelected(null);
+        setQuery("");
+      }
+    : undefined;
+  useEffect(() => {
+    const abort = new AbortController();
+    fetch("/api/agents", { signal: abort.signal })
+      .then(async (response) => {
+        if (!response.ok) throw new Error();
+        const body = await response.json();
+        if (!Array.isArray(body.agents)) throw new Error();
+        return body.agents;
+      })
+      .then((sources) => {
+        setSourceCatalog(sources);
+        setAgents((current) => mergeSourceAgents(current, sources));
+      })
+      .catch(() => {
+        if (!abort.signal.aborted)
+          setNotice(
+            "Local sources unavailable. Examples remain separate from connected agents.",
+          );
+      })
+      .finally(() => {
+        if (!abort.signal.aborted) setSourceReady(true);
+      });
+    return () => abort.abort();
+  }, []);
   useEffect(() => {
     try {
       localStorage.setItem(KEY, JSON.stringify(cacheWorkspace(agents)));
@@ -219,7 +314,21 @@ function App() {
         >
           ◷ <span>Journal</span>
         </button>
-        <GameMenu onExport={exportData} />
+        <button
+          aria-label="Agent iş özeti"
+          className={"nav " + (view === "work" ? "current" : "")}
+          onClick={() => {
+            setView("work");
+            setSelected(null);
+          }}
+        >
+          ≡ <span>Özet</span>
+        </button>
+        <GameMenu
+          onExport={exportData}
+          onExamples={toggleExamples}
+          showExamples={showExamples}
+        />
       </aside>
       <main>
         <div className="content">
@@ -230,7 +339,14 @@ function App() {
               </button>
               <div className="detail-heading">
                 <div className="profile-avatar">
-                  <Avatar avatarId={active.avatarId} size={112} />
+                  <Avatar
+                    avatarId={active.avatarId}
+                    size={
+                      active.tracking?.folder === "src/agents/avvapoc"
+                        ? 80
+                        : 112
+                    }
+                  />
                   <button
                     className="change-avatar"
                     aria-label="Change avatar"
@@ -244,7 +360,15 @@ function App() {
                 </div>
                 <div>
                   <h1>{active.name}</h1>
-                  <p>{active.role}</p>
+                  {!(
+                    active.localSource &&
+                    active.role.startsWith("Local source · ")
+                  ) && (
+                    <p>
+                      {active.demo ? "Example · " : ""}
+                      {active.role}
+                    </p>
+                  )}
                 </div>
                 <button
                   className="primary"
@@ -254,37 +378,62 @@ function App() {
                   + Milestone
                 </button>
               </div>
+              <button
+                className="back"
+                onClick={() => {
+                  setWorkAgentId(active.id);
+                  setSelected(null);
+                  setView("work");
+                }}
+              >
+                İş özetini aç →
+              </button>
+              <Capabilities key={active.id} tracking={active.tracking} />
               {active.tracking?.archiveVersion && (
-                <Evolution
-                  key={
-                    active.id +
-                    active.tracking.repositoryId +
-                    active.tracking.folder
-                  }
-                  agent={active}
-                  onSave={(updates) =>
-                    setAgents((current) =>
-                      current.map((agent) =>
-                        agent.id === active.id ? { ...agent, updates } : agent,
-                      ),
-                    )
-                  }
-                />
+                <SourceUpdates
+                  collapsed={Boolean(
+                    active.localSource &&
+                    active.tracking.folder === "src/agents/avvapoc" &&
+                    catalogFor(active)?.capabilityCount,
+                  )}
+                >
+                  <Evolution
+                    key={
+                      active.id +
+                      active.tracking.repositoryId +
+                      active.tracking.folder
+                    }
+                    agent={active}
+                    onSave={(updates) =>
+                      setAgents((current) =>
+                        current.map((agent) =>
+                          agent.id === active.id
+                            ? { ...agent, updates }
+                            : agent,
+                        ),
+                      )
+                    }
+                  />
+                </SourceUpdates>
               )}
-              <div className="section-title">
-                <h2>History</h2>
-                <span>{approvedHistory(active).length}</span>
-              </div>
-              {approvedHistory(active).length ? (
-                <ol className="timeline">{timeline(active)}</ol>
-              ) : (
-                <div className="empty">
-                  <h3>
-                    {active.updates?.proposals.length
-                      ? "Nothing approved yet"
-                      : "No milestones"}
-                  </h3>
-                </div>
+              {(!active.localSource || approvedHistory(active).length > 0) && (
+                <>
+                  <div className="section-title">
+                    <h2>History</h2>
+                    <span>{approvedHistory(active).length}</span>
+                  </div>
+                  {approvedHistory(active).length ? (
+                    <ol className="timeline">{timeline(active)}</ol>
+                  ) : (
+                    <div className="empty">
+                      <h3>
+                        {active.updates?.proposals.length
+                          ? "Nothing approved yet"
+                          : "No milestones"}
+                      </h3>
+                    </div>
+                  )}
+                </>
               )}
               <Tracking
                 key={active.id}
@@ -292,23 +441,34 @@ function App() {
                 onSave={(tracking) =>
                   setAgents((current) =>
                     current.map((agent) =>
-                      agent.id === active.id ? { ...agent, tracking } : agent,
+                      agent.id === active.id
+                        ? { ...agent, tracking, demo: false }
+                        : agent,
                     ),
                   )
                 }
               />
             </>
+          ) : view === "work" ? (
+            <WorkSummary
+              agents={agents.filter((a) => !a.demo || examplesMode)}
+              selectedId={workAgentId}
+              onSelect={setWorkAgentId}
+            />
           ) : view === "yard" ? (
             <Yard
               agents={visible}
               onSelect={setSelected}
               onMap={() => setView("map")}
               onActivity={() => setView("activity")}
+              onWork={() => setView("work")}
               onAdd={() => {
                 setAvatarId(randomAvatar());
                 setModal("agent");
               }}
               onExport={exportData}
+              onExamples={toggleExamples}
+              showExamples={showExamples}
               query={query}
               onQuery={setQuery}
             />
@@ -343,6 +503,55 @@ function App() {
                   {visible.length} {visible.length === 1 ? "agent" : "agents"}
                 </span>
               </div>
+              {view === "map" &&
+                sourceCatalog.some((source) => source.capabilityCount) && (
+                  <div className="agent-explore" aria-label="Agent keşfi">
+                    <label>
+                      Sağlayıcı
+                      <select
+                        aria-label="Agent sağlayıcı filtresi"
+                        value={exploreProvider}
+                        onChange={(e) => setExploreProvider(e.target.value)}
+                      >
+                        <option value="">Tümü / bilinmeyenler</option>
+                        {[
+                          ...new Set(
+                            sourceCatalog.flatMap((s) => s.providers || []),
+                          ),
+                        ].map((p) => (
+                          <option key={p}>{p}</option>
+                        ))}
+                      </select>
+                    </label>
+                    <label>
+                      Kanal
+                      <select
+                        aria-label="Agent kanal filtresi"
+                        value={exploreChannel}
+                        onChange={(e) => setExploreChannel(e.target.value)}
+                      >
+                        <option value="">Tümü / bilinmeyenler</option>
+                        {[
+                          ...new Set(
+                            sourceCatalog.flatMap((s) => s.channels || []),
+                          ),
+                        ].map((c) => (
+                          <option key={c}>{c}</option>
+                        ))}
+                      </select>
+                    </label>
+                    {(exploreProvider || exploreChannel) && (
+                      <button
+                        onClick={() => {
+                          setExploreProvider("");
+                          setExploreChannel("");
+                        }}
+                      >
+                        Filtreleri temizle
+                      </button>
+                    )}
+                  </div>
+                )}
               {visible.length === 0 ? (
                 <div className="empty">
                   <h3>No agents</h3>
@@ -368,6 +577,13 @@ function App() {
                           <Avatar avatarId={agent.avatarId} size={100} />
                         </div>
                         <h2>{agent.name}</h2>
+                        {agent.tracking && (
+                          <small className="agent-source-preview">
+                            {catalogFor(agent)?.capabilityCount
+                              ? `${catalogFor(agent)?.capabilityCount} yetenek`
+                              : "Yetenekler bilinmiyor"}
+                          </small>
+                        )}
                         {latest && (
                           <div className="latest">
                             <p>{latest.title}</p>

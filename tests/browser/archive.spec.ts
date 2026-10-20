@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test("archive reload, date import, branch isolation, backup and restore", async ({
   page,

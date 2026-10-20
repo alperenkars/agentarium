@@ -391,3 +391,50 @@ dialog form > .primary {
     width: 150px;
   }
 }
+
+.capabilities {
+  margin: 24px 0;
+}
+.capability-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr));
+  gap: 14px;
+}
+.capability-card {
+  border: 2px solid #716954;
+  border-radius: 8px;
+  padding: 16px;
+  background: #f6f0df;
+  min-width: 0;
+}
+.capability-card h3 {
+  margin: 0 0 8px;
+}
+.capability-status {
+  font-size: 0.82rem;
+  color: #655d4b;
+}
+.capability-chain {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  overflow-wrap: anywhere;
+  margin: 14px 0;
+}
+.capability-channels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.capability-card code {
+  overflow-wrap: anywhere;
+  font-size: 0.8rem;
+}
+.capability-work {
+  margin-top: 16px;
+}
+.capability-work li {
+  margin: 8px 0;
+  overflow-wrap: anywhere;
+}

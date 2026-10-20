@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test("yard uses the approved controls only; tags are retained but never exposed", async ({
   page,
@@ -23,6 +23,7 @@ test("yard uses the approved controls only; tags are retained but never exposed"
       "The yard",
       "Agent map",
       "Recent evolution",
+      "Agent iş özeti",
       "Add an agent",
     ].sort(),
   );

@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test("plain updates lead the profile; review, edit, dismiss and reopen persist without exposing Git by default", async ({
   page,

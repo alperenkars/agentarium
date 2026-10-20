@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import { avatarOptions } from "../../src/avatars.mjs";
 
 const key = "agentarium.workspace.v1";
