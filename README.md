@@ -208,6 +208,10 @@ credentials or production readiness.
 
 ## Agent work summary
 
+For teammate setup and the ID-only backend PR handoff, see
+[Team setup](docs/team-setup.md). Imports default to dry run and use each person's
+own ignored repository mapping; no credentials, Jira ticket or provider writes.
+
 Open **Özet** from the yard navigation or an agent profile. Select an agent to see
 its explicitly mapped Jira issues and pull requests, open work, review requests,
 current-head CI problems, source read dates and a suggested next step. Each row
