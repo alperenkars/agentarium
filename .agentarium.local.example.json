@@ -1,0 +1,10 @@
+{
+  "repositories": [
+    {
+      "id": "my-backend",
+      "name": "My backend",
+      "path": "/absolute/path/to/backend",
+      "agentsRoot": "src/agents"
+    }
+  ]
+}
